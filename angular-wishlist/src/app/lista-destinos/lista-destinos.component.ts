@@ -1,6 +1,9 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import {DestinoViaje} from './../models/destino-viaje.model';
 import { DestinosApiClient } from './../models/destinos-api-client.model';
+import { Store } from '@ngrx/store';
+import { AppState } from '../app.module';
+import { ElegidoFavoritoAction, NuevoDestinoAction} from '../models/destinos-viajes-state.model';
 
 @Component({
   selector: 'app-lista-destinos',
@@ -10,15 +13,19 @@ import { DestinosApiClient } from './../models/destinos-api-client.model';
 export class ListaDestinosComponent implements OnInit {
   @Output() onItemAdded: EventEmitter<DestinoViaje>;
   updates: string[];
+  all;
   
-  constructor(public destinosApiClient: DestinosApiClient) { 
+  constructor(public destinosApiClient: DestinosApiClient, public store: Store<AppState>) { 
     this.onItemAdded = new EventEmitter();
     this.updates = [];
-    this.destinosApiClient.subscribeOnChange((d: DestinoViaje) =>{
-      if(d!=null){
-        this.updates.push('Se ha elegido a '+d.nombre);
-      }
-    });
+    this.store.select(state => state.destinos.favorito)
+      .subscribe(d => {
+          console.log("Variable d -> ",d);
+          if(d!=null){
+            this.updates.push('Se ha elegido a '+d.nombre);
+          }
+      });
+    store.select(state => state.destinos.items).subscribe(items => this.all = items);
   }
 
   ngOnInit(): void {
@@ -33,4 +40,7 @@ export class ListaDestinosComponent implements OnInit {
     this.destinosApiClient.elegir(e);
   }
 
+  getAll(){
+
+  }
 }
